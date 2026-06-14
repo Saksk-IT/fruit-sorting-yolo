@@ -1,0 +1,10 @@
+# YOLO 数据集配置 —— 真实成熟度数据集
+path: /Users/sak/Desktop/fruit-sorting-yolo/dataset
+train: train/images
+val: valid/images
+
+nc: 3
+names:
+  0: ripe
+  1: half-ripe
+  2: raw
