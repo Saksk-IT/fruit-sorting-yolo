@@ -1,0 +1,81 @@
+# macOS / Windows
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Editors / local workspace
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.before_*_fix
+
+# Jupyter / notebooks
+.ipynb_checkpoints/
+
+# Local datasets and labeling exports
+dataset/*
+!dataset/.gitkeep
+!dataset/README.md
+!dataset/data.yaml
+!dataset/classes.txt
+dataset_raw/
+downloads/
+roboflow/
+fiftyone/
+
+# Training outputs and experiment trackers
+runs/
+wandb/
+mlruns/
+tensorboard/
+*.cache
+
+# Model weights and exported artifacts
+models/*
+!models/.gitkeep
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+*.mlmodel
+*.torchscript
+
+# Docker / local runtime
+docker/*.log

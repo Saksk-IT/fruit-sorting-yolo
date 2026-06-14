@@ -1,5 +1,5 @@
 # YOLO 数据集配置 —— 真实成熟度数据集
-path: /Users/sak/Desktop/fruit-sorting-yolo/dataset
+# path 省略时由 ultralytics 和本项目脚本按本文件所在目录解析，避免绑定本机绝对路径。
 train: train/images
 val: valid/images
 

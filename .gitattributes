@@ -1,0 +1,30 @@
+* text=auto eol=lf
+
+*.py text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+Dockerfile text eol=lf
+
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.webp binary
+*.mp4 binary
+*.mov binary
+*.avi binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.7z binary
+*.pt binary
+*.pth binary
+*.onnx binary
+*.engine binary
+*.tflite binary
+*.mlmodel binary
