@@ -119,7 +119,7 @@ class FruitSorterUI(QWidget):
         self.setWindowTitle("基于YOLO模型的桃子成熟度分拣系统")
         self.resize(1100, 680)
 
-        title = QLabel("🍏 基于 YOLO 模型的桃子成熟度分拣系统 🍎")
+        title = QLabel("🍑 基于 YOLO 模型的桃子成熟度分拣系统 🍑")
         title.setAlignment(Qt.AlignCenter)
         title.setFont(QFont("Microsoft YaHei", 18, QFont.Bold))
 
@@ -138,7 +138,7 @@ class FruitSorterUI(QWidget):
         ctrl = QGroupBox("产线控制")
         self.btn_train = QPushButton("模型训练")
         self.btn_predict_one = QPushButton("单个预测（单图片）")
-        self.btn_load_folder = QPushButton("加载水果（文件夹）")
+        self.btn_load_folder = QPushButton("加载桃子（文件夹）")
         self.btn_start_sort = QPushButton("开始分拣")
         self.btn_stop_sort = QPushButton("停止分拣")
         self.btn_open_camera = QPushButton("打开摄像头")

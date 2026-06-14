@@ -1,0 +1,61 @@
+# 基于YOLO模型的桃子成熟度分拣系统 —— Docker Compose
+# 用法:
+#   docker compose build                 # 构建镜像
+#   docker compose run --rm pipeline      # 命令行全流程(生成->训练->评估->预测)
+#   docker compose run --rm train         # 仅训练
+#   docker compose run --rm gui           # 启动界面(需先做 X11 转发, 见 README)
+#
+# 数据与产物通过卷挂载到宿主机, 训练结果(runs/)与数据集(dataset/)可持久化查看。
+
+services:
+  # ===== 命令行 ML 流程(默认, 开箱即用, CPU) =====
+  pipeline:
+    build:
+      context: .
+      args:
+        # 国内网络可改用镜像源加速构建, 例如:
+        # PIP_INDEX: https://pypi.tuna.tsinghua.edu.cn/simple
+        PIP_INDEX: https://pypi.org/simple
+    image: fruit-sorting-yolo:latest
+    environment:
+      DEVICE: cpu
+      EPOCHS: "30"
+      BATCH: "8"
+    volumes:
+      - ./dataset:/app/dataset
+      - ./runs:/app/runs
+    command: ["pipeline"]
+
+  # 仅训练
+  train:
+    image: fruit-sorting-yolo:latest
+    environment: { DEVICE: cpu, EPOCHS: "30", BATCH: "8" }
+    volumes:
+      - ./dataset:/app/dataset
+      - ./runs:/app/runs
+    command: ["train"]
+
+  # 仅预测
+  predict:
+    image: fruit-sorting-yolo:latest
+    environment: { DEVICE: cpu }
+    volumes:
+      - ./dataset:/app/dataset
+      - ./runs:/app/runs
+    command: ["predict"]
+
+  # ===== PyQt5 图形界面(可选, 需 X11 转发) =====
+  # Mac: 先装并启动 XQuartz, 勾选"允许网络客户端连接", 执行 xhost +localhost
+  #      再设置 DISPLAY=host.docker.internal:0
+  # Linux: xhost +local:docker; DISPLAY=$DISPLAY; 挂载 /tmp/.X11-unix
+  gui:
+    image: fruit-sorting-yolo:latest
+    environment:
+      DEVICE: cpu
+      DISPLAY: ${DISPLAY:-host.docker.internal:0}
+      QT_X11_NO_MITSHM: "1"
+    volumes:
+      - ./dataset:/app/dataset
+      - ./runs:/app/runs
+      - /tmp/.X11-unix:/tmp/.X11-unix   # Linux 用; Mac 用网络 DISPLAY 可忽略此挂载是否存在
+    command: ["gui"]

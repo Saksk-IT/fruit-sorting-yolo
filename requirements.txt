@@ -1,0 +1,8 @@
+# 基于YOLO模型的桃子成熟度分拣系统 —— 依赖
+# 安装: pip install -r requirements.txt
+ultralytics>=8.0.0      # YOLOv8 训练/推理
+opencv-python>=4.7.0    # 图像获取与预处理
+numpy>=1.23
+PyQt5>=5.15             # 前端界面(工业分级模拟)
+PyYAML>=6.0
+# LabelImg 用于数据标注(可选，单独安装): pip install labelImg

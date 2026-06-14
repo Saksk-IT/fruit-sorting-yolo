@@ -152,7 +152,7 @@ python scripts/04_eval.py  --data <导出目录>/data.yaml \
 
 ### 方式 B：自己拍照 + LabelImg 标注（数据最贴合你的场景）
 
-1. 拍摄不同成熟度的桃子照片(青桃/转色中/全红)，放入 `dataset_raw/`；
+1. 拍摄不同成熟度的桃子照片(青桃/转色中/成熟桃)，放入 `dataset_raw/`；
 2. 用 LabelImg 打开该目录，**格式选 YOLO**，对照 `classes.txt`
    (raw/half-ripe/ripe)画框；
 3. 运行 `python scripts/02_split_dataset.py --src dataset_raw --out dataset`；
