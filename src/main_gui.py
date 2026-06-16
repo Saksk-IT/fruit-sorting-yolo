@@ -36,6 +36,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from detector import FruitDetector, CN_NAME   # noqa: E402
 from conveyor import CameraSource, FolderSource, SyntheticSource    # noqa: E402
 from dataset_config import resolve_split_images   # noqa: E402
+from gui_background import GuiBackgroundSettings   # noqa: E402
 
 # 每个成熟度类别画框颜色 (BGR)：青绿 / 黄绿 / 红
 BOX_COLOR = {"raw": (70, 170, 90), "half-ripe": (110, 200, 200),
@@ -79,7 +80,7 @@ def preprocess(bgr):
 class FruitSorterUI(QWidget):
     def __init__(self, weights, source_dir, interval_ms=1500, conf=0.25,
                  device="mps", camera_index=0, camera_interval_ms=30,
-                 speech_cooldown=3.0):
+                 speech_cooldown=3.0, settings=None):
         super().__init__()
         self.repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.weights = weights
@@ -98,8 +99,10 @@ class FruitSorterUI(QWidget):
         self.last_spoken_cls = None
         self.last_spoken_at = 0.0
         self.say_cmd = shutil.which("say")
+        self.background = GuiBackgroundSettings(settings)
 
         self._build_ui()
+        self._load_background_setting()
         self._init_source()
         self._try_load_model()
 
@@ -119,7 +122,10 @@ class FruitSorterUI(QWidget):
     # ---------- UI ----------
     def _build_ui(self):
         self.setWindowTitle("基于YOLO模型的桃子成熟度分拣系统")
+        self.setObjectName("FruitSorterRoot")
+        self.setAutoFillBackground(True)
         self.resize(980, 780)
+        self.background.apply_default(self)
 
         self.lbl_clock = QLabel()
         self.lbl_clock.setAlignment(Qt.AlignCenter)
@@ -145,9 +151,12 @@ class FruitSorterUI(QWidget):
         self.btn_start_sort = QPushButton("开始分拣")
         self.btn_stop_sort = QPushButton("停止分拣")
         self.btn_open_camera = QPushButton("打开摄像头")
+        self.btn_background_image = QPushButton("背景图设置")
+        self.btn_clear_background = QPushButton("清除背景图")
         for btn in (
             self.btn_train, self.btn_predict_one, self.btn_load_folder,
             self.btn_start_sort, self.btn_stop_sort, self.btn_open_camera,
+            self.btn_background_image, self.btn_clear_background,
         ):
             btn.setMinimumHeight(34)
             btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -158,12 +167,20 @@ class FruitSorterUI(QWidget):
         self.btn_start_sort.clicked.connect(self.start)
         self.btn_stop_sort.clicked.connect(self.stop)
         self.btn_open_camera.clicked.connect(self.open_camera)
+        self.btn_background_image.clicked.connect(self._choose_background_image)
+        self.btn_clear_background.clicked.connect(self._clear_background_image)
 
         self.spin_interval = QSpinBox()
         self.spin_interval.setRange(300, 5000)
         self.spin_interval.setSingleStep(100)
         self.spin_interval.setSuffix(" ms/件")
         self.spin_interval.valueChanged.connect(self._on_interval_changed)
+
+        self.lbl_background_state = QLabel("背景：默认")
+        self.lbl_background_state.setWordWrap(True)
+        self.lbl_background_state.setStyleSheet(
+            "background:#ffffff;border:1px solid #d9e0e8;border-radius:4px;"
+            "padding:7px 10px;color:#334155;")
 
         g = QGridLayout()
         g.addWidget(self.btn_train, 0, 0)
@@ -174,6 +191,9 @@ class FruitSorterUI(QWidget):
         g.addWidget(self.btn_open_camera, 1, 2)
         g.addWidget(QLabel("分拣节拍:"), 2, 0)
         g.addWidget(self.spin_interval, 2, 1, 1, 2)
+        g.addWidget(self.btn_background_image, 3, 0)
+        g.addWidget(self.btn_clear_background, 3, 1)
+        g.addWidget(self.lbl_background_state, 3, 2)
         ctrl.setLayout(g)
 
         # 底部：当前结果
@@ -364,6 +384,43 @@ class FruitSorterUI(QWidget):
             frame, count_stats=False, log_result=True,
             empty_text="单图未识别到桃子")
         self._log(f"[单图预测] {path}")
+
+    def _choose_background_image(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "选择GUI背景图", "",
+            "Images (*.jpg *.jpeg *.png *.bmp *.webp);;All Files (*)")
+        if not path:
+            return
+        try:
+            saved_path = self.background.save_from(path)
+            self.background.apply_to(self)
+            self._update_background_state()
+            self._log(f"[界面] 背景图已设置: {saved_path}")
+        except Exception as e:
+            QMessageBox.warning(self, "背景图设置失败", str(e))
+            self._log(f"[界面] 背景图设置失败: {e}")
+
+    def _clear_background_image(self):
+        self.background.clear()
+        self.background.apply_default(self)
+        self._update_background_state()
+        self._log("[界面] 已清除背景图设置")
+
+    def _load_background_setting(self):
+        if self.background.load():
+            self.background.apply_to(self)
+        else:
+            self.background.apply_default(self)
+        self._update_background_state()
+
+    def _update_background_state(self):
+        self.lbl_background_state.setText(self.background.state_text)
+        self.btn_clear_background.setEnabled(self.background.has_image)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.background.has_image:
+            self.background.apply_to(self)
 
     def _train_model(self):
         if self.train_process is not None and self.train_process.poll() is None:
