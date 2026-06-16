@@ -118,15 +118,11 @@ class FruitSorterUI(QWidget):
     # ---------- UI ----------
     def _build_ui(self):
         self.setWindowTitle("基于YOLO模型的桃子成熟度分拣系统")
-        self.resize(980, 720)
-
-        title = QLabel("🍑 基于 YOLO 模型的桃子成熟度分拣系统 🍑")
-        title.setAlignment(Qt.AlignCenter)
-        title.setFont(QFont("Microsoft YaHei", 18, QFont.Bold))
+        self.resize(980, 780)
 
         self.lbl_clock = QLabel()
         self.lbl_clock.setAlignment(Qt.AlignCenter)
-        self.lbl_clock.setFont(QFont("Microsoft YaHei", 28, QFont.Bold))
+        self.lbl_clock.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         self.lbl_clock.setMinimumHeight(86)
         self.lbl_clock.setStyleSheet(
             "background:#ffffff;border:1px solid #d9e0e8;border-radius:6px;"
@@ -172,11 +168,13 @@ class FruitSorterUI(QWidget):
         g.addWidget(self.spin_interval, 2, 1, 1, 2)
         ctrl.setLayout(g)
 
-        # 右中：当前结果
-        res = QGroupBox("当前检测结果")
+        # 底部：当前结果
+        res = QGroupBox("当前分级结果")
         self.lbl_result = QLabel("—")
-        self.lbl_result.setFont(QFont("Microsoft YaHei", 14, QFont.Bold))
+        self.lbl_result.setFont(QFont("Microsoft YaHei", 24, QFont.Bold))
         self.lbl_result.setWordWrap(True)
+        self.lbl_result.setAlignment(Qt.AlignCenter)
+        self.lbl_result.setMinimumHeight(76)
         self.lbl_bin = QLabel("分级去向：—")
         self.lbl_bin.setFont(QFont("Microsoft YaHei", 13))
         rv = QVBoxLayout()
@@ -195,7 +193,6 @@ class FruitSorterUI(QWidget):
 
         right = QVBoxLayout()
         right.addWidget(ctrl)
-        right.addWidget(res)
         right.addWidget(stat)
 
         body = QHBoxLayout()
@@ -204,8 +201,8 @@ class FruitSorterUI(QWidget):
 
         root = QVBoxLayout()
         root.addWidget(self.lbl_clock)
-        root.addWidget(title)
         root.addLayout(body)
+        root.addWidget(res)
         self.setLayout(root)
 
     # ---------- 初始化 ----------
