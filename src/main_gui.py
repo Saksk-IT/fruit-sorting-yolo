@@ -39,6 +39,7 @@ from dataset_config import resolve_split_images   # noqa: E402
 # 每个成熟度类别画框颜色 (BGR)：青绿 / 黄绿 / 红
 BOX_COLOR = {"raw": (70, 170, 90), "half-ripe": (110, 200, 200),
              "ripe": (40, 40, 210)}
+DISPLAY_SIZE = (480, 400)
 
 
 def bgr_to_qpix(bgr, w=None, h=None):
@@ -117,7 +118,7 @@ class FruitSorterUI(QWidget):
     # ---------- UI ----------
     def _build_ui(self):
         self.setWindowTitle("基于YOLO模型的桃子成熟度分拣系统")
-        self.resize(1100, 680)
+        self.resize(980, 720)
 
         title = QLabel("🍑 基于 YOLO 模型的桃子成熟度分拣系统 🍑")
         title.setAlignment(Qt.AlignCenter)
@@ -126,7 +127,7 @@ class FruitSorterUI(QWidget):
         self.lbl_clock = QLabel()
         self.lbl_clock.setAlignment(Qt.AlignCenter)
         self.lbl_clock.setFont(QFont("Microsoft YaHei", 28, QFont.Bold))
-        self.lbl_clock.setMinimumWidth(240)
+        self.lbl_clock.setMinimumHeight(86)
         self.lbl_clock.setStyleSheet(
             "background:#ffffff;border:1px solid #d9e0e8;border-radius:6px;"
             "padding:10px 14px;color:#111827;")
@@ -134,7 +135,7 @@ class FruitSorterUI(QWidget):
         # 左：图像显示
         self.view = QLabel("等待传送带启动…")
         self.view.setAlignment(Qt.AlignCenter)
-        self.view.setFixedSize(640, 480)
+        self.view.setFixedSize(*DISPLAY_SIZE)
         self.view.setStyleSheet(
             "background:#202830;color:#9fb;border:2px solid #3a4a5a;")
 
@@ -202,8 +203,8 @@ class FruitSorterUI(QWidget):
         body.addLayout(right)
 
         root = QVBoxLayout()
-        root.addWidget(title)
         root.addWidget(self.lbl_clock)
+        root.addWidget(title)
         root.addLayout(body)
         self.setLayout(root)
 
@@ -311,7 +312,7 @@ class FruitSorterUI(QWidget):
                 self._log(f"[预测错误] {e}")
 
         shown = draw_dets(frame, dets)
-        self.view.setPixmap(bgr_to_qpix(shown, 640, 480))
+        self.view.setPixmap(bgr_to_qpix(shown, *DISPLAY_SIZE))
 
         if dets:
             top = dets[0]
