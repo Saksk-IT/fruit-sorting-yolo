@@ -28,7 +28,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap, QFont
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
-    QGridLayout, QGroupBox, QSpinBox, QTextEdit, QFileDialog, QMessageBox,
+    QGridLayout, QGroupBox, QSpinBox, QFileDialog, QMessageBox,
 )
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -125,7 +125,11 @@ class FruitSorterUI(QWidget):
 
         self.lbl_clock = QLabel()
         self.lbl_clock.setAlignment(Qt.AlignCenter)
-        self.lbl_clock.setFont(QFont("Microsoft YaHei", 12))
+        self.lbl_clock.setFont(QFont("Microsoft YaHei", 28, QFont.Bold))
+        self.lbl_clock.setMinimumWidth(240)
+        self.lbl_clock.setStyleSheet(
+            "background:#ffffff;border:1px solid #d9e0e8;border-radius:6px;"
+            "padding:10px 14px;color:#111827;")
 
         # 左：图像显示
         self.view = QLabel("等待传送带启动…")
@@ -179,15 +183,13 @@ class FruitSorterUI(QWidget):
         rv.addWidget(self.lbl_bin)
         res.setLayout(rv)
 
-        # 右下：统计 + 日志
-        stat = QGroupBox("分级统计 / 日志")
+        # 右下：统计
+        stat = QGroupBox("分级统计")
         self.lbl_stat = QLabel("总计 0 件")
         self.lbl_stat.setFont(QFont("Microsoft YaHei", 12, QFont.Bold))
-        self.log = QTextEdit()
-        self.log.setReadOnly(True)
         sv = QVBoxLayout()
         sv.addWidget(self.lbl_stat)
-        sv.addWidget(self.log)
+        sv.addStretch(1)
         stat.setLayout(sv)
 
         right = QVBoxLayout()
@@ -415,7 +417,7 @@ class FruitSorterUI(QWidget):
             self._try_load_model()
 
     def _update_clock(self):
-        self.lbl_clock.setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        self.lbl_clock.setText(datetime.now().strftime("%H:%M:%S\n%Y-%m-%d"))
 
     def _speak_detection(self, det):
         now = time.monotonic()
@@ -447,7 +449,7 @@ class FruitSorterUI(QWidget):
         self.lbl_stat.setText(f"总计 {self.total} 件 | " + " | ".join(parts))
 
     def _log(self, text):
-        self.log.append(text)
+        print(text)
 
     def closeEvent(self, event):
         if self.source is not None and hasattr(self.source, "release"):
