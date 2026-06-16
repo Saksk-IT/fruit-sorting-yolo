@@ -29,6 +29,7 @@ from PyQt5.QtGui import QImage, QPixmap, QFont
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QGridLayout, QGroupBox, QSpinBox, QFileDialog, QMessageBox,
+    QSizePolicy,
 )
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -137,12 +138,19 @@ class FruitSorterUI(QWidget):
 
         # 右上：控制区
         ctrl = QGroupBox("产线控制")
+        ctrl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.btn_train = QPushButton("模型训练")
         self.btn_predict_one = QPushButton("单个预测（单图片）")
         self.btn_load_folder = QPushButton("加载桃子（文件夹）")
         self.btn_start_sort = QPushButton("开始分拣")
         self.btn_stop_sort = QPushButton("停止分拣")
         self.btn_open_camera = QPushButton("打开摄像头")
+        for btn in (
+            self.btn_train, self.btn_predict_one, self.btn_load_folder,
+            self.btn_start_sort, self.btn_stop_sort, self.btn_open_camera,
+        ):
+            btn.setMinimumHeight(34)
+            btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.btn_stop_sort.setEnabled(False)
         self.btn_train.clicked.connect(self._train_model)
         self.btn_predict_one.clicked.connect(self._predict_single_image)
@@ -184,6 +192,7 @@ class FruitSorterUI(QWidget):
 
         # 右下：统计
         stat = QGroupBox("分级统计")
+        stat.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.lbl_stat = QLabel("总计 0 件")
         self.lbl_stat.setFont(QFont("Microsoft YaHei", 12, QFont.Bold))
         sv = QVBoxLayout()
@@ -192,12 +201,16 @@ class FruitSorterUI(QWidget):
         stat.setLayout(sv)
 
         right = QVBoxLayout()
-        right.addWidget(ctrl)
-        right.addWidget(stat)
+        right.addWidget(ctrl, 3)
+        right.addWidget(stat, 2)
 
         body = QHBoxLayout()
         body.addWidget(self.view)
-        body.addLayout(right)
+        right_panel = QWidget()
+        right_panel.setLayout(right)
+        right_panel.setMinimumWidth(360)
+        right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        body.addWidget(right_panel, 1)
 
         root = QVBoxLayout()
         root.addWidget(self.lbl_clock)
