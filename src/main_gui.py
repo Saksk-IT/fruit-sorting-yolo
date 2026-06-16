@@ -122,8 +122,8 @@ class FruitSorterUI(QWidget):
 
         self.lbl_clock = QLabel()
         self.lbl_clock.setAlignment(Qt.AlignCenter)
-        self.lbl_clock.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
-        self.lbl_clock.setMinimumHeight(86)
+        self.lbl_clock.setFont(QFont("Microsoft YaHei", 26, QFont.Bold))
+        self.lbl_clock.setMinimumHeight(58)
         self.lbl_clock.setStyleSheet(
             "background:#ffffff;border:1px solid #d9e0e8;border-radius:6px;"
             "padding:10px 14px;color:#111827;")
@@ -415,7 +415,7 @@ class FruitSorterUI(QWidget):
             self._try_load_model()
 
     def _update_clock(self):
-        self.lbl_clock.setText(datetime.now().strftime("%H:%M:%S\n%Y-%m-%d"))
+        self.lbl_clock.setText(datetime.now().strftime("%Y-%m-%d  %H:%M:%S"))
 
     def _speak_detection(self, det):
         now = time.monotonic()
