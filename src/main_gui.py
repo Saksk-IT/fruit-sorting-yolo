@@ -37,11 +37,13 @@ from conveyor import CameraSource, FolderSource, SyntheticSource    # noqa: E402
 from dataset_config import resolve_split_images   # noqa: E402
 from gui_background import GuiBackgroundSettings   # noqa: E402
 from settings_dialog import SettingsDialog   # noqa: E402
+from sorting_log_dialog import SortingLogDialog   # noqa: E402
 
 # 每个成熟度类别画框颜色 (BGR)：青绿 / 黄绿 / 红
 BOX_COLOR = {"raw": (70, 170, 90), "half-ripe": (110, 200, 200),
              "ripe": (40, 40, 210)}
 RESULT_COLOR = {"raw": "#2f7d46", "half-ripe": "#b27a16", "ripe": "#b63a32"}
+MAX_SORT_LOG_ROWS = 1000
 
 
 def bgr_to_qpix(bgr, w=None, h=None):
@@ -106,6 +108,8 @@ class FruitSorterUI(QWidget):
         self.say_voice = "Tingting"
         self.speech_process = None
         self.background = GuiBackgroundSettings(settings)
+        self.sort_logs = []
+        self.log_dialog = None
 
         self._build_ui()
         self._load_background_setting()
@@ -168,7 +172,7 @@ class FruitSorterUI(QWidget):
             }
         """)
 
-        # ---------- 顶栏：时钟 + 齿轮 ----------
+        # ---------- 顶栏：日志 + 时钟 + 齿轮 ----------
         self.lbl_clock = QLabel()
         self.lbl_clock.setAlignment(Qt.AlignCenter)
         self.lbl_clock.setFont(QFont("Microsoft YaHei", 24, QFont.Bold))
@@ -177,6 +181,15 @@ class FruitSorterUI(QWidget):
         self.lbl_clock.setStyleSheet(
             "background:#ffffff;border:1px solid #d9e0e8;border-radius:8px;"
             "padding:8px 14px;color:#111827;")
+
+        self.btn_log = QPushButton("☰")
+        self.btn_log.setToolTip("查看分拣日志")
+        self.btn_log.setFixedSize(46, 46)
+        self.btn_log.setStyleSheet(
+            "QPushButton{background:#ffffff;border:1px solid #d9e0e8;"
+            "border-radius:8px;font-size:24px;padding:0;}"
+            "QPushButton:hover{background:#e0ebf6;}")
+        self.btn_log.clicked.connect(self._open_log_dialog)
 
         self.btn_settings = QPushButton("⚙")
         self.btn_settings.setToolTip("设置")
@@ -189,6 +202,7 @@ class FruitSorterUI(QWidget):
 
         top_bar = QHBoxLayout()
         top_bar.setSpacing(10)
+        top_bar.addWidget(self.btn_log, 0)
         top_bar.addWidget(self.lbl_clock, 1)
         top_bar.addWidget(self.btn_settings, 0)
 
@@ -416,6 +430,18 @@ class FruitSorterUI(QWidget):
         # 节拍变更后，若正在非摄像头自动分拣则即时生效
         if self.timer.isActive() and not self._uses_camera_fast_timer():
             self.timer.start(self.interval_ms)
+
+    def _open_log_dialog(self):
+        log_text = self._log_text()
+        if self.log_dialog is None:
+            self.log_dialog = SortingLogDialog(self, log_text)
+            self.log_dialog.finished.connect(self._clear_log_dialog_ref)
+        else:
+            self.log_dialog.set_log_text(log_text)
+        self.log_dialog.show()
+        if QApplication.platformName() != "offscreen":
+            self.log_dialog.raise_()
+            self.log_dialog.activateWindow()
 
     def _choose_folder(self):
         self.stop()
@@ -812,7 +838,18 @@ class FruitSorterUI(QWidget):
             self.lbl_source_name.setText("来源：实时合成")
 
     def _log(self, text):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        updated_logs = [*self.sort_logs, f"{timestamp}  {text}"]
+        self.sort_logs = updated_logs[-MAX_SORT_LOG_ROWS:]
+        if self.log_dialog is not None:
+            self.log_dialog.set_log_text(self._log_text())
         print(text)
+
+    def _log_text(self):
+        return "\n".join(self.sort_logs)
+
+    def _clear_log_dialog_ref(self, _result=None):
+        self.log_dialog = None
 
     def closeEvent(self, event):
         self._stop_speech()
