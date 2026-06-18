@@ -231,6 +231,7 @@ class FruitSorterUI(QWidget):
         self.btn_load_folder = QPushButton("加载文件夹")
         self.btn_step_folder = QPushButton("逐个检测")
         self.btn_open_camera = QPushButton("打开摄像头")
+        self.btn_close_camera = QPushButton("关闭摄像头")
         self.btn_start_sort = QPushButton("开始分拣")
         self.btn_stop_sort = QPushButton("停止分拣")
         self.btn_start_sort.setStyleSheet(
@@ -243,6 +244,7 @@ class FruitSorterUI(QWidget):
             "font-weight:700;border-radius:6px;min-height:30px;}"
             "QPushButton:disabled{background:#d3a8a5;color:#f3eeee;}")
         self.btn_stop_sort.setEnabled(False)
+        self.btn_close_camera.setEnabled(False)
         self.btn_train.clicked.connect(self._train_model)
         self.btn_predict_one.clicked.connect(self._predict_single_image)
         self.btn_load_folder.clicked.connect(self._choose_folder)
@@ -250,10 +252,11 @@ class FruitSorterUI(QWidget):
         self.btn_start_sort.clicked.connect(self.start)
         self.btn_stop_sort.clicked.connect(self.stop)
         self.btn_open_camera.clicked.connect(self.open_camera)
+        self.btn_close_camera.clicked.connect(self.close_camera)
 
         ctrl_buttons = (
             self.btn_train, self.btn_predict_one, self.btn_load_folder,
-            self.btn_step_folder, self.btn_open_camera,
+            self.btn_step_folder, self.btn_open_camera, self.btn_close_camera,
             self.btn_start_sort, self.btn_stop_sort,
         )
         for btn in ctrl_buttons:
@@ -348,8 +351,8 @@ class FruitSorterUI(QWidget):
         grid = self._ctrl_grid
         while grid.count():
             grid.takeAt(0)
-        action_btns = self._ctrl_buttons[:5]   # 训练/单图/文件夹/逐个/摄像头
-        start_stop = self._ctrl_buttons[5:]     # 开始/停止
+        action_btns = self._ctrl_buttons[:6]   # 训练/单图/文件夹/逐个/打开/关闭摄像头
+        start_stop = self._ctrl_buttons[6:]     # 开始/停止
         row = 0
         for i, btn in enumerate(action_btns):
             grid.addWidget(btn, row + i // columns, i % columns)
@@ -483,6 +486,20 @@ class FruitSorterUI(QWidget):
             self._set_running(True)
             self._set_run_state("状态：摄像头实时识别")
             self._log(f"[摄像头] 已打开: {self.camera_index}，开始实时显示与识别")
+        self._refresh_camera_controls()
+
+    def close_camera(self):
+        if not isinstance(self.source, CameraSource):
+            self._refresh_camera_controls()
+            return
+        self.timer.stop()
+        self.camera_previewing = False
+        self.camera_latest_frame = None
+        self._set_running(False)
+        self._fallback_to_source()
+        self._refresh_camera_controls()
+        self._set_run_state("状态：待机")
+        self._log("[摄像头] 已关闭")
 
     def on_tick(self):
         """一次传送带节拍：取图 -> 预处理 -> YOLO 预测 -> 显示 -> 统计。"""
@@ -668,6 +685,7 @@ class FruitSorterUI(QWidget):
         self.source = source
         if old is not None and hasattr(old, "release"):
             old.release()
+        self._refresh_camera_controls()
 
     def _fallback_to_source(self):
         try:
@@ -700,6 +718,11 @@ class FruitSorterUI(QWidget):
     def _set_running(self, running):
         self.btn_start_sort.setEnabled(not running)
         self.btn_stop_sort.setEnabled(running)
+
+    def _refresh_camera_controls(self):
+        if not hasattr(self, "btn_close_camera"):
+            return
+        self.btn_close_camera.setEnabled(isinstance(self.source, CameraSource))
 
     def _check_train_process(self):
         if self.train_process is None:
