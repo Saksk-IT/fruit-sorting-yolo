@@ -571,7 +571,7 @@ class FruitSorterUI(QWidget):
         if dets:
             top = dets[0]
             self.lbl_result.setText(
-                f"{top.cn}\n置信度 {top.conf:.2f}"
+                f"{top.cn}  置信度 {top.conf:.2f}"
                 + (f"  等{len(dets)}个目标" if len(dets) > 1 else ""))
             self._set_result_style(top.cls_name)
             self.lbl_bin.setText(f"分级去向：{top.bin}")

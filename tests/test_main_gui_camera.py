@@ -18,6 +18,7 @@ from PyQt5.QtGui import QColor, QImage  # noqa: E402
 from PyQt5.QtWidgets import QApplication  # noqa: E402
 
 from main_gui import FruitSorterUI  # noqa: E402
+from detector import Detection  # noqa: E402
 
 
 _QT_APP = None
@@ -95,6 +96,23 @@ class MainGuiCameraTest(unittest.TestCase):
         self.assertTrue(ui.btn_start_sort.isEnabled())
         self.assertFalse(ui.btn_stop_sort.isEnabled())
         self.assertIn("文件夹 / source", ui.lbl_source_name.text())
+
+    def test_detection_result_is_rendered_on_one_line(self):
+        ui = self._make_ui()
+        ui.model_ok = True
+        ui.detector.predict = lambda _frame: [
+            Detection("apple", 0.29, (1, 2, 20, 22))
+        ]
+
+        ui._handle_frame(
+            np.zeros((24, 32, 3), dtype=np.uint8),
+            count_stats=False,
+            speak=False,
+            log_result=False,
+        )
+
+        self.assertEqual(ui.lbl_result.text(), "apple  置信度 0.29")
+        self.assertNotIn("\n", ui.lbl_result.text())
 
 
 if __name__ == "__main__":
